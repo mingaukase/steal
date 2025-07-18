@@ -1,0 +1,114 @@
+local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local storedPosition = nil
+local floating = false
+local floatHeight = 20
+local floatSpeed = 50
+
+-- GUI e botão
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "StealHub"
+screenGui.ResetOnSpawn = false
+
+local btn = Instance.new("TextButton")
+btn.Size = UDim2.new(0, 120, 0, 50)
+btn.Position = UDim2.new(0, 20, 0, 40)
+btn.BackgroundColor3 = Color3.fromRGB(135, 206, 250)
+btn.BorderSizePixel = 0
+btn.Text = "Steal"
+btn.TextColor3 = Color3.new(1, 1, 1)
+btn.TextScaled = true
+btn.Font = Enum.Font.SourceSansBold
+btn.Name = "StealButton"
+btn.AutoButtonColor = true
+btn.ClipsDescendants = true
+btn.BackgroundTransparency = 0
+btn.Visible = true
+btn.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = btn
+
+-- Armazena a posição inicial
+local function storePosition()
+local char = player.Character or player.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+storedPosition = root.Position
+end
+
+-- Movimento até as coordenadas com correção
+local function floatToPosition(destination)
+local char = player.Character or player.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+
+-- Eleva o personagem antes de andar  
+root.CFrame = CFrame.new(root.Position.X, destination.Y + floatHeight, root.Position.Z)  
+
+local bodyVelocity = Instance.new("BodyVelocity")  
+bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)  
+bodyVelocity.Velocity = Vector3.zero  
+bodyVelocity.P = 12500  
+bodyVelocity.Parent = root  
+
+local reached = false  
+local connection  
+
+connection = RunService.Heartbeat:Connect(function()  
+	if not root or not root.Parent then  
+		connection:Disconnect()  
+		return  
+	end  
+
+	local currentPos = root.Position  
+	local targetPos = Vector3.new(destination.X, currentPos.Y, destination.Z)  
+
+	local direction = (targetPos - currentPos)  
+	local distance = direction.Magnitude  
+
+	if distance < 1 then  
+		reached = true  
+		bodyVelocity.Velocity = Vector3.zero  
+		root.CFrame = CFrame.new(destination.X, destination.Y + floatHeight, destination.Z)  
+		bodyVelocity:Destroy()  
+		connection:Disconnect()  
+	else  
+		bodyVelocity.Velocity = direction.Unit * floatSpeed  
+	end  
+end)  
+
+repeat task.wait() until reached
+
+end
+
+-- Botão
+btn.MouseButton1Click:Connect(function()
+if floating then return end
+floating = true
+
+-- Estado de "Roubando..."  
+btn.Text = "Roubando..."  
+btn.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Cinza escuro  
+btn.AutoButtonColor = false  
+btn.Active = false  
+
+if not storedPosition then  
+	storePosition()  
+	task.wait(1)  
+end  
+
+floatToPosition(storedPosition)  
+
+-- Volta ao estado normal  
+btn.Text = "Steal"  
+btn.BackgroundColor3 = Color3.fromRGB(135, 206, 250) -- Azul celeste  
+btn.AutoButtonColor = true  
+btn.Active = true  
+
+floating = false
+
+end)
+
+storePosition()
