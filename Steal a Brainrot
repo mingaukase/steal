@@ -16,26 +16,26 @@ local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "TeleportStealGUI"
 gui.ResetOnSpawn = false
 
--- Função pra criar botão com borda arredondada
+-- Função para criar botão com borda arredondada
 local function createButton(name, text, pos)
-	local btn = Instance.new("TextButton")
-	btn.Name = name
-	btn.Size = UDim2.new(0, 140, 0, 45)
-	btn.Position = pos
-	btn.BackgroundColor3 = Color3.fromRGB(50, 100, 255)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = Enum.Font.SourceSansBold
-	btn.TextSize = 20
-	btn.Text = text
-	btn.Parent = gui
-	btn.AutoButtonColor = true
-	btn.BackgroundTransparency = 0.1
-	btn.BorderSizePixel = 0
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Size = UDim2.new(0, 140, 0, 45)
+    btn.Position = pos
+    btn.BackgroundColor3 = Color3.fromRGB(50, 100, 255)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 20
+    btn.Text = text
+    btn.Parent = gui
+    btn.AutoButtonColor = true
+    btn.BackgroundTransparency = 0.1
+    btn.BorderSizePixel = 0
 
-	local round = Instance.new("UICorner", btn)
-	round.CornerRadius = UDim.new(0, 12)
+    local round = Instance.new("UICorner", btn)
+    round.CornerRadius = UDim.new(0, 12)
 
-	return btn
+    return btn
 end
 
 -- Botões
@@ -46,30 +46,65 @@ local btnAddCord = createButton("AddCord", "ADD CORD", UDim2.new(0, 20, 0.5, -60
 local btnRoubar = createButton("Roubar", "ROUBAR", UDim2.new(0, 20, 0.5, 0))
 btnRoubar.Visible = false
 
--- Salvar posição
+-- Coordenadas
+local coords = {
+    Vector3.new(-416, 37, 55),
+    Vector3.new(-411, 25, 259),
+    Vector3.new(-409, 25, -141)
+}
+
+-- Coordenada do meio (calculada a partir das 3 coordenadas)
+local middleCoord = Vector3.new(
+    (coords[1].X + coords[2].X + coords[3].X) / 3,
+    (coords[1].Y + coords[2].Y + coords[3].Y) / 3,
+    (coords[1].Z + coords[2].Z + coords[3].Z) / 3
+)
+
+-- Salvar posição e mostrar o botão "ROUBAR"
 btnAddCord.MouseButton1Click:Connect(function()
-	storedPosition = hrp.Position
-	btnAddCord.Visible = false
-	btnRoubar.Visible = true
+    -- Atualiza a posição salva com a posição atual do jogador
+    storedPosition = hrp.Position
+    btnAddCord.Visible = false
+    btnRoubar.Visible = true
 end)
 
--- Mover até o local com velocidade equilibrada
+-- Mover até a coordenada do meio e depois para a posição marcada com ADD CORD
 btnRoubar.MouseButton1Click:Connect(function()
-	if storedPosition and not moving then
-		moving = true
-		local speed = 60 -- velocidade média
+    if storedPosition and not moving then
+        moving = true
+        -- Primeiro vai até a coordenada do meio
+        local targetPosition = middleCoord
+        local speed = 60 -- Velocidade média
 
-		local connection
-		connection = RunService.RenderStepped:Connect(function()
-			if not storedPosition or (hrp.Position - storedPosition).Magnitude < 5 then
-				connection:Disconnect()
-				moving = false
-				hrp.Velocity = Vector3.zero
-				return
-			end
+        local connection
+        connection = RunService.RenderStepped:Connect(function()
+            if (hrp.Position - targetPosition).Magnitude < 5 then
+                -- Quando chegar na coordenada do meio, ir para a posição salva diretamente
+                connection:Disconnect()
+                moving = false
+                hrp.Velocity = Vector3.zero
 
-			local direction = (storedPosition - hrp.Position).Unit
-			hrp.Velocity = direction * speed
-		end)
-	end
+                -- Agora vai para a posição marcada com ADD CORD
+                local targetPosition2 = storedPosition
+                local newSpeed = 100 -- Aumenta a velocidade para 100
+
+                connection = RunService.RenderStepped:Connect(function()
+                    if (hrp.Position - targetPosition2).Magnitude < 5 then
+                        connection:Disconnect()
+                        hrp.Velocity = Vector3.zero
+                        btnRoubar.Visible = true -- De volta ao estado inicial
+                        moving = false
+                        return
+                    end
+
+                    local direction = (targetPosition2 - hrp.Position).Unit
+                    hrp.Velocity = direction * newSpeed
+                end)
+                return
+            end
+
+            local direction = (targetPosition - hrp.Position).Unit
+            hrp.Velocity = direction * speed
+        end)
+    end
 end)
