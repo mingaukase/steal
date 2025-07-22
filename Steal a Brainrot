@@ -43,7 +43,7 @@ local storedPosition = nil
 local moving = false
 
 local btnAddCord = createButton("AddCord", "ADD CORD", UDim2.new(0, 20, 0.5, -60))
-local btnRoubar = createButton("Roubar", "ROUBAR", UDim2.new(0, 20, 0.5, 0))
+local btnRoubar = createButton("Roubar", "Steal-v2.0", UDim2.new(0, 20, 0.5, 0))
 btnRoubar.Visible = false
 
 -- Coordenadas
