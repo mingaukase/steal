@@ -1,9 +1,7 @@
 -- Future Purple Hub v3 - Teleport GUI e Auto Steal 💨💜
-
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
-
 local guiEnabled = true
 local boostJump = false
 local espOn = false
@@ -11,133 +9,130 @@ local godOn = false
 local skyGuiEnabled = false
 local godModeConn = nil
 local espConnections = {}
-
 local char, root, humanoid
 
 local function updateChar()
-	char = player.Character or player.CharacterAdded:Wait()
-	root = char:WaitForChild("HumanoidRootPart")
-	humanoid = char:WaitForChild("Humanoid")
+    char = player.Character or player.CharacterAdded:Wait()
+    root = char:WaitForChild("HumanoidRootPart")
+    humanoid = char:WaitForChild("Humanoid")
 end
 
 updateChar()
 player.CharacterAdded:Connect(function()
-	task.wait(1)
-	updateChar()
+    task.wait(1)
+    updateChar()
 end)
 
 local function toggleGodMode(state)
-	godOn = state
-	if not humanoid then return end
-	if state then
-		humanoid.MaxHealth = math.huge
-		humanoid.Health = math.huge
-		if godModeConn then godModeConn:Disconnect() end
-		godModeConn = humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-			if humanoid.Health < math.huge then
-				humanoid.Health = math.huge
-			end
-		end)
-	else
-		if godModeConn then godModeConn:Disconnect() end
-		humanoid.MaxHealth = 100
-		humanoid.Health = 100
-	end
+    godOn = state
+    if not humanoid then return end
+    if state then
+        humanoid.MaxHealth = math.huge
+        humanoid.Health = math.huge
+        if godModeConn then godModeConn:Disconnect() end
+        godModeConn = humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+            if humanoid.Health < math.huge then
+                humanoid.Health = math.huge
+            end
+        end)
+    else
+        if godModeConn then godModeConn:Disconnect() end
+        humanoid.MaxHealth = 100
+        humanoid.Health = 100
+    end
 end
 
 local function toggleESP(state)
-	espOn = state
-	if state then
-		local function addESP(char)
-			if char:FindFirstChild("PurpleESP") then return end
-			local highlight = Instance.new("Highlight")
-			highlight.Name = "PurpleESP"
-			highlight.FillColor = Color3.fromRGB(170, 85, 255)
-			highlight.OutlineColor = Color3.new(1, 1, 1)
-			highlight.FillTransparency = 0.4
-			highlight.OutlineTransparency = 0
-			highlight.Parent = char
-		end
-		for _, p in pairs(Players:GetPlayers()) do
-			if p ~= player and p.Character then
-				addESP(p.Character)
-			end
-		end
-		table.insert(espConnections, Players.PlayerAdded:Connect(function(p)
-			p.CharacterAdded:Connect(function(c)
-				if espOn then addESP(c) end
-			end)
-		end))
-	else
-		for _, c in ipairs(espConnections) do c:Disconnect() end
-		espConnections = {}
-		for _, p in pairs(Players:GetPlayers()) do
-			if p.Character and p.Character:FindFirstChild("PurpleESP") then
-				p.Character.PurpleESP:Destroy()
-			end
-		end
-	end
+    espOn = state
+    if state then
+        local function addESP(char)
+            if char:FindFirstChild("PurpleESP") then return end
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "PurpleESP"
+            highlight.FillColor = Color3.fromRGB(170, 85, 255)
+            highlight.OutlineColor = Color3.new(1, 1, 1)
+            highlight.FillTransparency = 0.4
+            highlight.OutlineTransparency = 0
+            highlight.Parent = char
+        end
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player and p.Character then
+                addESP(p.Character)
+            end
+        end
+        table.insert(espConnections, Players.PlayerAdded:Connect(function(p)
+            p.CharacterAdded:Connect(function(c)
+                if espOn then addESP(c) end
+            end)
+        end))
+    else
+        for _, c in ipairs(espConnections) do c:Disconnect() end
+        espConnections = {}
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("PurpleESP") then
+                p.Character.PurpleESP:Destroy()
+            end
+        end
+    end
 end
 
 UserInputService.JumpRequest:Connect(function()
-	if boostJump and root then
-		root.Velocity = Vector3.new(0, 100, 0)
-	end
+    if boostJump and root then
+        root.Velocity = Vector3.new(0, 100, 0)
+    end
 end)
 
 -- TELEPORT GUI
 local function createSkyGui()
-	local skyGui = Instance.new("ScreenGui", player.PlayerGui)
-	skyGui.Name = "SkyGui"
+    local skyGui = Instance.new("ScreenGui", player.PlayerGui)
+    skyGui.Name = "SkyGui"
+    local up = Instance.new("TextButton", skyGui)
+    up.Size = UDim2.new(0, 100, 0, 30)
+    up.Position = UDim2.new(1, -110, 0.5, -35)
+    up.BackgroundColor3 = Color3.fromRGB(140, 100, 255)
+    up.Text = "⬆ Subir"
+    up.TextColor3 = Color3.new(1, 1, 1)
+    up.Font = Enum.Font.GothamBold
+    up.TextSize = 14
+    Instance.new("UICorner", up).CornerRadius = UDim.new(0, 6)
 
-	local up = Instance.new("TextButton", skyGui)
-	up.Size = UDim2.new(0, 100, 0, 30)
-	up.Position = UDim2.new(1, -110, 0.5, -35)
-	up.BackgroundColor3 = Color3.fromRGB(140, 100, 255)
-	up.Text = "⬆ Subir"
-	up.TextColor3 = Color3.new(1, 1, 1)
-	up.Font = Enum.Font.GothamBold
-	up.TextSize = 14
-	Instance.new("UICorner", up).CornerRadius = UDim.new(0, 6)
+    local down = Instance.new("TextButton", skyGui)
+    down.Size = UDim2.new(0, 100, 0, 30)
+    down.Position = UDim2.new(1, -110, 0.5, 5)
+    down.BackgroundColor3 = Color3.fromRGB(140, 100, 255)
+    down.Text = "⬇ Descer"
+    down.TextColor3 = Color3.new(1, 1, 1)
+    down.Font = Enum.Font.GothamBold
+    down.TextSize = 14
+    Instance.new("UICorner", down).CornerRadius = UDim.new(0, 6)
 
-	local down = Instance.new("TextButton", skyGui)
-	down.Size = UDim2.new(0, 100, 0, 30)
-	down.Position = UDim2.new(1, -110, 0.5, 5)
-	down.BackgroundColor3 = Color3.fromRGB(140, 100, 255)
-	down.Text = "⬇ Descer"
-	down.TextColor3 = Color3.new(1, 1, 1)
-	down.Font = Enum.Font.GothamBold
-	down.TextSize = 14
-	Instance.new("UICorner", down).CornerRadius = UDim.new(0, 6)
+    up.MouseButton1Click:Connect(function()
+        if root then
+            root.CFrame = root.CFrame + Vector3.new(0, 300, 0)
+        end
+    end)
 
-	up.MouseButton1Click:Connect(function()
-		if root then
-			root.CFrame = root.CFrame + Vector3.new(0, 300, 0)
-		end
-	end)
-
-	down.MouseButton1Click:Connect(function()
-		if root then
-			root.CFrame = CFrame.new(root.Position.X, -7, root.Position.Z)
-		end
-	end)
+    down.MouseButton1Click:Connect(function()
+        if root then
+            root.CFrame = CFrame.new(root.Position.X, -7, root.Position.Z)
+        end
+    end)
 end
 
 local function toggleSkyGui(state)
-	skyGuiEnabled = state
-	local existing = player.PlayerGui:FindFirstChild("SkyGui")
-	if state then
-		if not existing then createSkyGui() end
-	else
-		if existing then existing:Destroy() end
-	end
+    skyGuiEnabled = state
+    local existing = player.PlayerGui:FindFirstChild("SkyGui")
+    if state then
+        if not existing then createSkyGui() end
+    else
+        if existing then existing:Destroy() end
+    end
 end
 
 -- GUI PRINCIPAL
 local screen = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 screen.Name = "FuturePurpleHub"
 screen.ResetOnSpawn = false
-
 local toggleButton = Instance.new("TextButton", screen)
 toggleButton.Size = UDim2.new(0, 30, 0, 30)
 toggleButton.Position = UDim2.new(0, 10, 0, 10)
@@ -149,14 +144,13 @@ toggleButton.TextSize = 18
 Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 6)
 
 local frame = Instance.new("Frame", screen)
-frame.Size = UDim2.new(0, 260, 0, 250)  -- Ajustado para mais espaço
+frame.Size = UDim2.new(0, 260, 0, 250)
 frame.Position = UDim2.new(0.5, -130, 0.5, -125)
 frame.BackgroundColor3 = Color3.fromRGB(60, 0, 90)
 frame.Visible = true
 frame.Active = true
 frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
-
 local layout = Instance.new("UIListLayout", frame)
 layout.Padding = UDim.new(0, 10)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -164,42 +158,38 @@ layout.VerticalAlignment = Enum.VerticalAlignment.Center
 
 -- Função para criar botões do tipo ON/OFF
 local function createToggleOption(name, initialState, onToggle)
-	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 240, 0, 30)  -- Menor largura
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.AutoButtonColor = false
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-
-	local function updateState(active)
-		btn.Text = name .. ": " .. (active and "ON" or "OFF")
-		btn.BackgroundColor3 = active and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 60, 60)
-	end
-
-	local state = initialState
-	updateState(state)
-
-	btn.MouseButton1Click:Connect(function()
-		state = not state
-		updateState(state)
-		onToggle(state)
-	end)
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(0, 240, 0, 30)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.AutoButtonColor = false
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local function updateState(active)
+        btn.Text = name .. ": " .. (active and "ON" or "OFF")
+        btn.BackgroundColor3 = active and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 60, 60)
+    end
+    local state = initialState
+    updateState(state)
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        updateState(state)
+        onToggle(state)
+    end)
 end
 
 -- Função para botão de clique direto (sem ON/OFF)
 local function createActionButton(name, action)
-	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(0, 240, 0, 30)
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
-	btn.Text = name
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.BackgroundColor3 = Color3.fromRGB(170, 85, 255)
-	btn.AutoButtonColor = true
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-
-	btn.MouseButton1Click:Connect(action)
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(0, 240, 0, 30)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    btn.Text = name
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.BackgroundColor3 = Color3.fromRGB(170, 85, 255)
+    btn.AutoButtonColor = true
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseButton1Click:Connect(action)
 end
 
 -- BOTÕES DO HUB
@@ -207,13 +197,122 @@ createToggleOption("GodMode", false, toggleGodMode)
 createToggleOption("BoostJump", false, function(val) boostJump = val end)
 createToggleOption("ESP", false, toggleESP)
 createToggleOption("Teleport GUI", false, toggleSkyGui)
+
 createActionButton("Auto Steal", function()
-	pcall(function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/mingaukase/steal/refs/heads/main/Steal%20a%20Brainrot"))()
-	end)
+    pcall(function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        local humanoid = character:WaitForChild("Humanoid")
+        local TweenService = game:GetService("TweenService")
+        local RunService = game:GetService("RunService")
+
+        -- Anti-dano
+        humanoid.Health = humanoid.MaxHealth
+        humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+            humanoid.Health = humanoid.MaxHealth
+        end)
+
+        -- Criar GUI
+        local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+        gui.Name = "TeleportStealGUI"
+        gui.ResetOnSpawn = false
+
+        -- Função para criar botão com borda arredondada
+        local function createButton(name, text, pos)
+            local btn = Instance.new("TextButton")
+            btn.Name = name
+            btn.Size = UDim2.new(0, 140, 0, 45)
+            btn.Position = pos
+            btn.BackgroundColor3 = Color3.fromRGB(50, 100, 255)
+            btn.TextColor3 = Color3.new(1, 1, 1)
+            btn.Font = Enum.Font.SourceSansBold
+            btn.TextSize = 20
+            btn.Text = text
+            btn.Parent = gui
+            btn.AutoButtonColor = true
+            btn.BackgroundTransparency = 0.1
+            btn.BorderSizePixel = 0
+
+            local round = Instance.new("UICorner", btn)
+            round.CornerRadius = UDim.new(0, 12)
+
+            return btn
+        end
+
+        -- Botões
+        local storedPosition = nil
+        local moving = false
+
+        local btnAddCord = createButton("AddCord", "ADD CORD", UDim2.new(0, 20, 0.5, -60))
+        local btnRoubar = createButton("Roubar", "Steal-v2.0", UDim2.new(0, 20, 0.5, 0))
+        btnRoubar.Visible = false
+
+        -- Coordenadas
+        local coords = {
+            Vector3.new(-416, 37, 55),
+            Vector3.new(-411, 25, 259),
+            Vector3.new(-409, 25, -141)
+        }
+
+        -- Coordenada do meio (calculada a partir das 3 coordenadas)
+        local middleCoord = Vector3.new(
+            (coords[1].X + coords[2].X + coords[3].X) / 3,
+            (coords[1].Y + coords[2].Y + coords[3].Y) / 3,
+            (coords[1].Z + coords[2].Z + coords[3].Z) / 3
+        )
+
+        -- Salvar posição e mostrar o botão "ROUBAR"
+        btnAddCord.MouseButton1Click:Connect(function()
+            storedPosition = hrp.Position
+            btnAddCord.Visible = false
+            btnRoubar.Visible = true
+        end)
+
+        -- Mover até a coordenada do meio, teletransportar para Y=-7 e depois para a posição marcada com ADD CORD
+        btnRoubar.MouseButton1Click:Connect(function()
+            if storedPosition and not moving then
+                moving = true
+                -- Primeiro vai até a coordenada do meio
+                local targetPosition = middleCoord
+                local speed = 90 -- Velocidade ajustada para 90
+
+                local connection
+                connection = RunService.RenderStepped:Connect(function()
+                    if (hrp.Position - targetPosition).Magnitude < 5 then
+                        connection:Disconnect()
+                        moving = false
+                        hrp.Velocity = Vector3.zero
+                        hrp.CFrame = CFrame.new(hrp.Position.X, -7, hrp.Position.Z)
+
+                        -- Agora vai para a posição marcada com ADD CORD
+                        local targetPosition2 = storedPosition
+                        local newSpeed = 90 -- Mantendo a velocidade de 90
+
+                        connection = RunService.RenderStepped:Connect(function()
+                            if (hrp.Position - targetPosition2).Magnitude < 5 then
+                                connection:Disconnect()
+                                hrp.Velocity = Vector3.zero
+                                btnRoubar.Visible = true -- De volta ao estado inicial
+                                moving = false
+                                return
+                            end
+
+                            local direction = (targetPosition2 - hrp.Position).Unit
+                            hrp.Velocity = direction * newSpeed
+                        end)
+                        return
+                    end
+
+                    local direction = (targetPosition - hrp.Position).Unit
+                    hrp.Velocity = direction * speed
+                end)
+            end
+        end)
+    end)
 end)
 
 toggleButton.MouseButton1Click:Connect(function()
-	guiEnabled = not guiEnabled
-	frame.Visible = guiEnabled
+    guiEnabled = not guiEnabled
+    frame.Visible = guiEnabled
 end)
