@@ -275,7 +275,7 @@ createActionButton("Auto Steal", function()
                 moving = true
                 -- Primeiro vai até a coordenada do meio
                 local targetPosition = middleCoord
-                local speed = 90 -- Velocidade ajustada para 90
+                local speed = 55 -- Velocidade ajustada para 55
 
                 local connection
                 connection = RunService.RenderStepped:Connect(function()
@@ -287,7 +287,7 @@ createActionButton("Auto Steal", function()
 
                         -- Agora vai para a posição marcada com ADD CORD
                         local targetPosition2 = storedPosition
-                        local newSpeed = 90 -- Mantendo a velocidade de 90
+                        local newSpeed = 55 -- Mantendo a velocidade de 55
 
                         connection = RunService.RenderStepped:Connect(function()
                             if (hrp.Position - targetPosition2).Magnitude < 5 then
